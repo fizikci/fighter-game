@@ -7,3 +7,16 @@ body {
     display: flex;
     flex-direction:column;
 }
+
+#scene {
+    position:relative;
+    width:1000px;
+    height: 700px;
+    border:2px solid black;
+    background-color: cadetblue;
+}
+
+.player {
+    position: absolute;
+
+}

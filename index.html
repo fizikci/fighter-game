@@ -7,7 +7,22 @@
 </head>
 <body ng-controller="MainController">
 
-    <div>{{player1.name}}</div>
+    <div ng-if="!user.name">
+        Name: <input ng-model="user.name"/> <button ng-click="addUser()">JOIN</button>
+    </div>
+
+    <div ng-if="user.name && !game">
+        <button ng-click="startGame()">START GAME</button>
+    </div>
+
+    <div id="scene" tabindex="0" ng-keydown="move($event)" ng-if="game">
+        <div class="player" ng-style="{left:thisPlayer.location.x+'%', top:(50-thisPlayer.location.y)+'%'}">
+            <img src="/assets/sprites/{{thisPlayer.state}}.gif">
+        </div>
+        <div class="player" ng-style="{left:otherPlayer.location.x+'%', top:(50-otherPlayer.location.y)+'%'}">
+            <img src="/assets/sprites/{{otherPlayer.state}}.gif">
+        </div>
+    </div>
     
     <script type="text/javascript" src="assets/angular.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.0.2/firebase-app.js"></script>
