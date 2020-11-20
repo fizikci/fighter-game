@@ -2,25 +2,39 @@
 <html ng-app="app">
 <head>
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="assets/app.css">
     <title>Fighter Game</title>
 </head>
 <body ng-controller="MainController">
 
-    <div ng-if="!user.name">
-        Name: <input ng-model="user.name"/> <button ng-click="addUser()">JOIN</button>
+    <div id="login" ng-if="state=='login'">
+        <h1>Enter Your Name</h1>
+        <input ng-model="user.name"/>
+        <h1>Select Your Fighter</h1>
+        <div class="characters">
+            <div
+                ng-repeat="c in characters" 
+                ng-click="user.character = c" 
+                ng-class="{selected:user.character == c}"
+                style="background-image:url(assets/sprites/x/Fighters/{{c}}_grid.png)"></div>
+        </div>
+        <button ng-click="addUser()">JOIN</button>
     </div>
 
-    <div ng-if="user.name && !game">
+    <div ng-if="state=='start-game'">
         <button ng-click="startGame()">START GAME</button>
     </div>
 
-    <div id="scene" tabindex="0" ng-keydown="move($event)" ng-if="game">
-        <div class="player" ng-style="{left:thisPlayer.location.x+'%', top:(50-thisPlayer.location.y)+'%'}">
-            <img src="/assets/sprites/{{thisPlayer.state}}.gif">
+    <div id="scene" tabindex="0" ng-keydown="move($event)" ng-if="state=='in-game'">
+        <div 
+            class="player {{me.state}} {{me.location.x>opponent.location.x?'flipped':'normal'}}" 
+            ng-style="{backgroundImage:'url(assets/sprites/x/Fighters/'+me.character+'_grid.png)', left:me.location.x+'%', top:(50-me.location.y)+'%'}">
         </div>
-        <div class="player" ng-style="{left:otherPlayer.location.x+'%', top:(50-otherPlayer.location.y)+'%'}">
-            <img src="/assets/sprites/{{otherPlayer.state}}.gif">
+        <div 
+            class="player {{opponent.state}} {{opponent.location.x>me.location.x?'flipped':'normal'}}" 
+            ng-style="{backgroundImage:'url(assets/sprites/x/Fighters/'+opponent.character+'_grid.png)', left:opponent.location.x+'%', top:(50-opponent.location.y)+'%'}">
         </div>
     </div>
     

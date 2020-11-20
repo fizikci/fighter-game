@@ -15,53 +15,149 @@ app.controller('MainController', function ($scope) {
         appId: "1:330716838991:web:9d4adc9f8a4ce46f21fe3a",
         measurementId: "G-7BXF2SJRCF"
     });
-    
-    _.database = firebase.database();
 
-    var userId = getCookie('userId');
-    if(!userId)
-        _.user = {name:''};
+    _.characters = ['Ang','Katara','Sokka','Toph','Zuko'];
+    
+    _.db = firebase.database();
+
+    _.state = 'init';
+
+    _.userId = getCookie('userId');
+    if(!_.userId){
+        _.state = 'login';
+        _.user = {name:'Guest', character:_.characters[Math.random()*_.characters.length]};
+    }
     else
-        _.database.ref('/users/' + userId).once('value').then(function(snapshot) {
-            _.user = snapshot.val();
+        _.db.ref('users/' + _.userId).once('value').then(function(snapshot) {
+            _.$applyAsync(()=>{
+                if(snapshot.exists()){
+                    _.user = snapshot.val();
+                    if(_.user.currentGameRef)
+                        _.startExistingGame(_.user.currentGameRef);
+                    else
+                        _.state = 'start-game';
+                }
+                else {
+                    _.state = 'login';
+                    _.user = {name:'Guest', character:_.characters[Math.random()*_.characters.length]};
+                    _.userId = null;
+                }
+            });
         });
     
     _.addUser = function(){
-        var newUserRef = _.database.ref('/users').push();
+        var newUserRef = _.db.ref('users').push();
         newUserRef.set(_.user).then(function(){
-            setCookie("userId", newUserRef.key);
+            _.$applyAsync(()=>{
+                setCookie("userId", newUserRef.key);
+                _.userId = newUserRef.key;
+                _.state = 'start-game';
+            });
         });
-    };
+    }
 
     _.startGame = function(){
-        var ref = _.database.ref("games");
-        ref.orderByChild("started").equalTo(false).once("value", function(snapshot) {
-            _.game = snapshot.val();
+        _.db.ref('users').orderByChild("waitingForGame").equalTo(true).limitToFirst(1).once('value', snap => {
+            _.$applyAsync(()=>{
+                if(snap.exists()){
+                    var opponent = Object.values(snap.val())[0];
+                    _.opponentId = Object.keys(snap.val())[0];
 
+                    var game = {players:{}};
+                    game.players[_.opponentId] = {
+                        health:100, location:{x:80, y:20}, character:opponent.character, name:opponent.name, state:'stand2'
+                    };
+                    game.players[_.userId] = {
+                        health:100, location:{x:20, y:20}, character:_.user.character, name:_.user.name, state:'stand2'
+                    };
+
+                    _.gameId = _.db.ref('games').push(game).path.pieces_[1];
+                    _.game = game;
+                    _.state = 'in-game';
+
+                    opponent.waitingForGame = false;
+                    opponent.currentGameRef = _.gameId;
+                    _.db.ref('users/'+_.opponentId).set(opponent);
+
+                    _.user.waitimgForGame = false;
+                    _.user.currentGameRef = _.gameId;
+                    _.db.ref('users/'+_.userId).set(_.user);
+
+                    _.db.ref('games/'+_.gameId).on('value',function(snap){
+                        _.$applyAsync(()=>_.gameUpdated(snap.val()));
+                    });
+                }
+                else {
+                    _.user.waitingForGame = true;
+                    _.db.ref('users/'+_.userId).set(_.user).then(()=>{
+                        let whenGameAssigned = snap => {
+                            _.$applyAsync(()=>{
+                                var val = snap.val();
+                                if(val.currentGameRef){
+                                    _.startExistingGame(val.currentGameRef);
+                                    _.db.ref('users/'+_.userId).off('value', whenGameAssigned);
+                                }
+                            });
+                        };
+                        _.db.ref('users/'+_.userId).on('value', whenGameAssigned);
+                    });
+                }
+            });
         });
-        _.database.ref('/player1').on('value', function(snapshot) {
-            try{
-                _.$applyAsync(function(){
-                    _.player1 = snapshot.val();
-                    console.log(_.player1);
-                });
-            }
-            catch{}
+    }
+
+    _.startExistingGame = function(gameRef){
+        _.gameId = gameRef;
+        _.state = 'in-game';
+        _.db.ref('games/'+gameRef).on('value',function(snap){
+            _.opponentId = Object.keys(snap.val().players).filter(k=>k!=_.userId)[0];
+            _.$applyAsync(()=>_.gameUpdated(snap.val()));
         });
-    };
+    }
+
+    _.gameUpdated = function(g){
+        _.game = g;
+        _.me = g.players[_.userId];
+        _.opponent = g.players[_.opponentId];
+    }
 
     _.move = e => {
-        console.log(e.code);
-        var loc = {x:_.player1.location.x, y:_.player1.location.y};
-        if(e.code=="ArrowUp")
-            loc.y = 50;
-        else if(e.code=="ArrowLeft")
-            loc.x = Math.max(0, loc.x - 3);
-        else if(e.code=="ArrowRight")
-            loc.x = Math.min(80, loc.x + 3);
-          
-        _.database.ref('/player1/location').set(loc);
-    };
+
+        var me = _.game.players[_.userId];
+        var op = _.game.players[_.opponentId];
+
+        if(e.code=="ArrowUp"){
+            me.location.y = 50;
+            me.state = 'jump';
+            _.setMe(me);
+            setTimeout(()=>{me.state='stand'; me.location.y = 20; _.setMe(me)}, 300);
+        }
+        else if(e.code=="ArrowLeft"){
+            me.location.x = Math.max(0, me.location.x - 3);
+            _.setMe(me);
+        }
+        else if(e.code=="ArrowRight"){
+            me.location.x = Math.min(80, me.location.x + 3);
+            _.setMe(me);
+        }
+        else if(e.code=="KeyQ"){
+            me.state = 'punch1';
+            _.setMe(me);
+            setTimeout(()=>{me.state='punch2'; _.setMe(me)}, 150);
+            setTimeout(()=>{me.state='stand2'; _.setMe(me)}, 300);
+
+            setTimeout(()=>{op.state='hit'; _.setOp(op)}, 150);
+            setTimeout(()=>{op.state='stand2'; _.setOp(op)}, 300);
+        }
+        
+    }
+
+    _.setMe = function(me){
+        _.db.ref(`games/${_.gameId}/players/${_.userId}`).set(me);
+    }
+    _.setOp = function(op){
+        _.db.ref(`games/${_.gameId}/players/${_.opponentId}`).set(op);
+    }
 });
 
 

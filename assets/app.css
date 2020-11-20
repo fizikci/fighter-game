@@ -3,9 +3,22 @@ html {
 }
 
 body {
-    font-family: Segoe UI,Helvetica Neue,Helvetica,Lucida Grande,Arial,Ubuntu,Cantarell,Fira Sans,sans-serif;
-    display: flex;
-    flex-direction:column;
+    font-family: 'Permanent Marker', cursive;
+}
+
+input, button {
+    font-family: 'Permanent Marker';
+    color: red;
+    text-align: center;
+    font-size: 50px;
+    width: 230px;
+    border:none;
+}
+
+button {
+    color:white;
+    background: red;
+    border:2px black solid
 }
 
 #scene {
@@ -18,5 +31,48 @@ body {
 
 .player {
     position: absolute;
-
+    width: 400px;
+    height: 320px;
+    background-size: 400% 400%;
+    transition: left 150ms, top 150ms;
 }
+
+.flipped {
+    transform: scaleX(-1);
+}
+
+#login {text-align: center;}
+
+.characters{
+    margin-bottom: 40px;
+}
+.characters div {
+    width: 100px;
+    height: 100px;
+    display: inline-block;
+    background-size: 400% 400%;
+    border: white 3px solid;
+}
+.characters div.selected {
+    border: red 3px solid;
+}
+
+.stand1 {background-position: 0% 0%}
+.stand2 {background-position: 33% 0%}
+.stand3 {background-position: 66% 0%}
+.jump {background-position: 100% 0%}
+
+.hit {background-position: 0% 33%}
+.kick1 {background-position: 33% 33%}
+.kick2 {background-position: 66% 33%}
+.guard1 {background-position: 100% 33%}
+
+.punch1 {background-position: 0% 66%}
+.punch2 {background-position: 33% 66%}
+.guard {background-position: 66% 66%}
+.airkick {background-position: 100% 66%}
+
+.fall {background-position: 0% 100%}
+.attack1 {background-position: 33% 100%}
+.attack2 {background-position: 66% 100%}
+.attack3 {background-position: 100% 100%}
