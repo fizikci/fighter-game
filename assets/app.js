@@ -1,4 +1,5 @@
 ﻿var _ = null;
+var defTop = 10;
 
 var app = angular.module('app', []);
 app.controller('MainController', function ($scope) {
@@ -16,7 +17,7 @@ app.controller('MainController', function ($scope) {
         measurementId: "G-7BXF2SJRCF"
     });
 
-    _.characters = ['Ang','Katara','Sokka','Toph','Zuko'];
+    _.characters = ['ang','katara','sokka','toph','zuko'];
     
     _.db = firebase.database();
 
@@ -65,10 +66,10 @@ app.controller('MainController', function ($scope) {
 
                     var game = {players:{}};
                     game.players[_.opponentId] = {
-                        health:100, location:{x:80, y:20}, character:opponent.character, name:opponent.name, state:'stand2'
+                        health:100, location:{x:80, y:defTop}, character:opponent.character, name:opponent.name, state:'stand2'
                     };
                     game.players[_.userId] = {
-                        health:100, location:{x:20, y:20}, character:_.user.character, name:_.user.name, state:'stand2'
+                        health:100, location:{x:20, y:defTop}, character:_.user.character, name:_.user.name, state:'stand2'
                     };
 
                     _.gameId = _.db.ref('games').push(game).path.pieces_[1];
@@ -79,7 +80,7 @@ app.controller('MainController', function ($scope) {
                     opponent.currentGameRef = _.gameId;
                     _.db.ref('users/'+_.opponentId).set(opponent);
 
-                    _.user.waitimgForGame = false;
+                    _.user.waitingForGame = false;
                     _.user.currentGameRef = _.gameId;
                     _.db.ref('users/'+_.userId).set(_.user);
 
@@ -130,7 +131,7 @@ app.controller('MainController', function ($scope) {
             me.location.y = 50;
             me.state = 'jump';
             _.setMe(me);
-            setTimeout(()=>{me.state='stand'; me.location.y = 20; _.setMe(me)}, 300);
+            setTimeout(()=>{me.state='stand'; me.location.y = defTop; _.setMe(me)}, 300);
         }
         else if(e.code=="ArrowLeft"){
             me.location.x = Math.max(0, me.location.x - 3);

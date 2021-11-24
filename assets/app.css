@@ -23,16 +23,17 @@ button {
 
 #scene {
     position:relative;
-    width:1000px;
+    width:100%;
     height: 700px;
     border:2px solid black;
-    background-color: cadetblue;
+    background-image: url(/assets/sprites/x/Backgrounds/mekan-6.png);
+    background-size: cover;
 }
 
 .player {
     position: absolute;
-    width: 400px;
-    height: 320px;
+    width: 34vh;
+    height: 40vh;
     background-size: 400% 400%;
     transition: left 150ms, top 150ms;
 }

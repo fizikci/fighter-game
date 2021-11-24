@@ -30,11 +30,11 @@
     <div id="scene" tabindex="0" ng-keydown="move($event)" ng-if="state=='in-game'">
         <div 
             class="player {{me.state}} {{me.location.x>opponent.location.x?'flipped':'normal'}}" 
-            ng-style="{backgroundImage:'url(assets/sprites/x/Fighters/'+me.character+'_grid.png)', left:me.location.x+'%', top:(50-me.location.y)+'%'}">
+            ng-style="{backgroundImage:'url(assets/sprites/x/Fighters/'+me.character+'_grid.png)', left:me.location.x+'vh', top:(60-me.location.y)+'vh'}">
         </div>
         <div 
             class="player {{opponent.state}} {{opponent.location.x>me.location.x?'flipped':'normal'}}" 
-            ng-style="{backgroundImage:'url(assets/sprites/x/Fighters/'+opponent.character+'_grid.png)', left:opponent.location.x+'%', top:(50-opponent.location.y)+'%'}">
+            ng-style="{backgroundImage:'url(assets/sprites/x/Fighters/'+opponent.character+'_grid.png)', left:opponent.location.x+'vh', top:(60-opponent.location.y)+'%'}">
         </div>
     </div>
     
